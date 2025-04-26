@@ -1,0 +1,19 @@
+{
+    "name": "haltdev/pelatihan",
+    "description": "Projek Akhir Pelatihan Haltdev",
+    "license": "GPL",
+    "autoload": {
+        "psr-4": {
+            "Haltdev\\Pelatihan\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "kidman",
+            "email": "thephantomwarrior02@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^4.1"
+    }
+}

@@ -1,0 +1,125 @@
+body {
+  width: 100%;
+  background-color: white;
+  min-height: 100vh;
+}
+
+.def-background {
+  background-color: #e2062c;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 1rem 0;
+  color: black;
+}
+
+.flex-col-med {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.button-style {
+  width: 300px;
+  height: 100%;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.button-style:hover {
+  background-color: azure;
+  scale: 1.05;
+  transition-duration: 100ms;
+}
+
+html {
+  height: 100%;
+}
+
+.login-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  padding: 40px;
+  transform: translate(-50%, -50%);
+  background: rgb(39, 33, 33);
+  box-sizing: border-box;
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+}
+
+.login-box h2 {
+  margin: 0 0 30px;
+  padding: 0;
+  color: #fff;
+  text-align: center;
+}
+
+.login-box .user-box {
+  position: relative;
+}
+
+.login-box .user-box input {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 30px;
+  border: none;
+  border-bottom: 1px solid #fff;
+  outline: none;
+  background: transparent;
+}
+
+.btn-login {
+  background-color: #ff0000;
+  color: #eee;
+  font-weight: bold;
+  text-transform: uppercase;
+  width: 320px;
+  height: 100%;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 8px;
+  position: relative;
+}
+
+::placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #fff;
+  pointer-events: none;
+  transition: 0.5s;
+}
+
+.login-box form a {
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  color: #03e9f4;
+  font-size: 16px;
+  text-decoration: none;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: 0.5s;
+  margin-top: 40px;
+  letter-spacing: 4px;
+}
