@@ -1,45 +1,61 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include '../koneksi.php';
 
-$id_peserta = $_POST['id_peserta'];
 $nama_peserta = $_POST['nama_peserta'];
 $email_peserta = $_POST['email_peserta'];
+$telp_peserta = $_POST['telp_peserta'];
 $alamat_peserta = $_POST['alamat_peserta'];
 $instansi = $_POST['instansi'];
+$id_mentor = (int) $_POST['id_mentor'];
+$mentor = $_POST['mentor'];
+$tanggal_mulai = $_POST['tanggal_mulai'];
+$tanggal_selesai = $_POST['tanggal_selesai'];
 
-// Pastikan `id_mentor` ada dan tidak kosong
-$id_mentor = isset($_POST['id_mentor']) && $_POST['id_mentor'] !== '' ? (int) $_POST['id_mentor'] : NULL;
-$mentor = isset($_POST['mentor']) ? $_POST['mentor'] : '';
+// Validate phone number format
+if (!preg_match('/^0[0-9]{8,14}$/', $telp_peserta)) {
+    $_SESSION['alert'] = [
+        'type' => 'danger',
+        'message' => 'Format nomor telepon tidak valid! Harus diawali dengan 0 dan terdiri dari 9-15 digit.'
+    ];
+    header("Location: ../tambah.php");
+    exit();
+}
 
-// Periksa apakah ID Peserta sudah ada
-$query = "SELECT id_peserta FROM peserta WHERE id_peserta = ?";
+// Insert the new participant
+$query = "INSERT INTO peserta (nama_peserta, email_peserta, telp_peserta, alamat_peserta, instansi, id_mentor, mentor, tanggal_mulai, tanggal_selesai) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
 $stmt = $conn->prepare($query);
-$stmt->bind_param("s", $id_peserta);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt->bind_param(
+    "sssssisss",
+    $nama_peserta,
+    $email_peserta,
+    $telp_peserta,
+    $alamat_peserta,
+    $instansi,
+    $id_mentor,
+    $mentor,
+    $tanggal_mulai,
+    $tanggal_selesai
+);
 
-if ($result->num_rows > 0) {
-    echo "<script>alert('ID Peserta sudah ada dalam database!');window.location.href='../tambah.php';</script>";
+if ($stmt->execute()) {
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'message' => 'Data Peserta berhasil ditambahkan!'
+    ];
+    header("Location: ../admin.php");
 } else {
-    var_dump($id_peserta, $nama_peserta, $email_peserta, $alamat_peserta, $instansi, $id_mentor, $mentor);
-    // Query untuk menambahkan data
-    $query = "INSERT INTO peserta (id_peserta, nama_peserta, email_peserta, alamat_peserta, instansi, id_mentor, mentor) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-    $stmt = $conn->prepare($query);
-    if ($id_mentor === NULL) {
-        $stmt->bind_param("sssss s", $id_peserta, $nama_peserta, $email_peserta, $alamat_peserta, $instansi, $mentor);
-    } else {
-        $stmt->bind_param("sssssis", $id_peserta, $nama_peserta, $email_peserta, $alamat_peserta, $instansi, $id_mentor, $mentor);
-    }
-
-    if ($stmt->execute()) {
-        echo "<script>alert('Data Peserta berhasil ditambahkan!');window.location.href='../admin.php';</script>";
-    } else {
-        echo "<script>alert('Data Peserta gagal ditambahkan!');window.location.href='../admin.php';</script>";
-    }
+    $_SESSION['alert'] = [
+        'type' => 'danger',
+        'message' => 'Data Peserta gagal ditambahkan!'
+    ];
+    header("Location: ../tambah.php");
 }
 
 $stmt->close();
 $conn->close();
-?>
+exit();

@@ -1,67 +1,89 @@
 <?php
-// Sertakan koneksi database
+require '../vendor/autoload.php';
 include '../koneksi.php';
-
-// Load library PhpSpreadsheet
-require '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-// Buat objek spreadsheet baru
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-// Judul kolom dalam file Excel
-$sheet->setCellValue('A1', 'ID Peserta');
-$sheet->setCellValue('B1', 'Nama Peserta');
-$sheet->setCellValue('C1', 'Email');
-$sheet->setCellValue('D1', 'Alamat Peserta');
-$sheet->setCellValue('E1', 'Instansi');
-$sheet->setCellValue('F1', 'ID Mentor');
-$sheet->setCellValue('G1', 'Nama Mentor');
+// Set headers to match admin.php table structure
+$headers = [
+    'ID Peserta',
+    'Nama Peserta',
+    'Email',
+    'No. Telp',
+    'Alamat',
+    'Instansi',
+    'Mentor',
+    'Tanggal Mulai',
+    'Tanggal Selesai',
+    'Status'
+];
 
-// Ambil data dari database dengan join ke tabel mentor
-$query = "SELECT 
-            peserta.id_peserta, 
-            peserta.nama_peserta, 
-            peserta.email_peserta, 
-            peserta.alamat_peserta, 
-            peserta.instansi, 
-            peserta.id_mentor, 
-            mentor.nama_mentor 
-          FROM peserta
-          LEFT JOIN mentor ON peserta.id_mentor = mentor.id_mentor";
-
-$result = $conn->query($query);
-
-if ($result->num_rows > 0) {
-    $rowIndex = 2; // Mulai dari baris kedua setelah header
-    while ($row = $result->fetch_assoc()) {
-        $sheet->setCellValue('A' . $rowIndex, $row['id_peserta']);
-        $sheet->setCellValue('B' . $rowIndex, $row['nama_peserta']);
-        $sheet->setCellValue('C' . $rowIndex, $row['email_peserta']);
-        $sheet->setCellValue('D' . $rowIndex, $row['alamat_peserta']);
-        $sheet->setCellValue('E' . $rowIndex, $row['instansi']);
-        $sheet->setCellValue('F' . $rowIndex, $row['id_mentor']);
-        $sheet->setCellValue('G' . $rowIndex, $row['nama_mentor']);
-        $rowIndex++;
-    }
+$col = 'A';
+foreach ($headers as $header) {
+    $sheet->setCellValue($col . '1', $header);
+    $col++;
 }
 
-// Atur nama file dan header agar dapat diunduh sebagai Excel
-$filename = "data_peserta.xlsx";
-$filePath = __DIR__ . "/$filename"; // Simpan di direktori yang sama
+// Query data
+$query = "SELECT * FROM peserta ORDER BY id_peserta ASC";
+$result = mysqli_query($conn, $query);
+$row_number = 2;
 
-// Simpan file Excel ke server sebelum mengirimkannya
+while ($row = mysqli_fetch_array($result)) {
+    // Calculate remaining days and status
+    $today = new DateTime();
+    $end_date = new DateTime($row['tanggal_selesai']);
+    $interval = $today->diff($end_date);
+    $remaining_days = $interval->format('%R%a');
+
+    // Determine status text
+    if ($remaining_days <= 0) {
+        $status = 'Selesai';
+    } else if ($remaining_days <= 7) {
+        $status = $remaining_days . ' hari (Segera Selesai)';
+    } else if ($remaining_days <= 14) {
+        $status = $remaining_days . ' hari';
+    } else {
+        $status = $remaining_days . ' hari';
+    }
+
+    $sheet->setCellValue('A' . $row_number, $row['id_peserta']);
+    $sheet->setCellValue('B' . $row_number, $row['nama_peserta']);
+    $sheet->setCellValue('C' . $row_number, $row['email_peserta']);
+    $sheet->setCellValue('D' . $row_number, $row['telp_peserta']);
+    $sheet->setCellValue('E' . $row_number, $row['alamat_peserta']);
+    $sheet->setCellValue('F' . $row_number, $row['instansi']);
+    $sheet->setCellValue('G' . $row_number, $row['mentor']);
+    $sheet->setCellValue('H' . $row_number, date('d/m/Y', strtotime($row['tanggal_mulai'])));
+    $sheet->setCellValue('I' . $row_number, date('d/m/Y', strtotime($row['tanggal_selesai'])));
+    $sheet->setCellValue('J' . $row_number, $status);
+
+    $row_number++;
+}
+
+// Auto-size columns
+foreach (range('A', 'J') as $col) {
+    $sheet->getColumnDimension($col)->setAutoSize(true);
+}
+
+// Set header style
+$headerStyle = [
+    'font' => ['bold' => true],
+    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+    'fill' => [
+        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+        'startColor' => ['rgb' => 'E2EFDA']
+    ]
+];
+$sheet->getStyle('A1:J1')->applyFromArray($headerStyle);
+
+// Create Excel file
 $writer = new Xlsx($spreadsheet);
-$writer->save(__DIR__ . '/tes_peserta.xlsx');
-
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="' . $filename . '"');
+header('Content-Disposition: attachment;filename="Data_Peserta_Magang.xlsx"');
 header('Cache-Control: max-age=0');
-
-$writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
-exit;
-?>

@@ -30,7 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 $error = "Password salah.";
             }
-            
         } else {
             $error = "Username tidak ditemukan.";
         }
@@ -42,25 +41,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Sistem Pendataan Magang</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
-<body>
-    <div class="login-box">
-        <h2>Login</h2>
-        <?php if (isset($error)) echo "<p>$error</p>"; ?>
-        <form method="post">
-            <div class="user-box">
-                <input type="text" placeholder="Username" name="username" required>
+
+<body class="def-background">
+    <div class="container">
+        <div class="login-box">
+            <div class="text-center mb-4">
+                <img src="/assets/logotel.png" alt="Logo Telkom" class="mb-4" style="height: 60px;">
+                <h2 class="title">Login</h2>
+                <p class="text-muted">Silakan masuk untuk mengakses sistem</p>
             </div>
-            <div class="user-box">
-                <input type="password" placeholder="Password" name="password" required>
-            </div>
-            <button class="btn-login btn-primary" type="submit">Login</button>
-        </form>
+
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <?php echo $error; ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" required placeholder="Masukkan username">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="Masukkan password">
+                    </div>
+                </div>
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
+            </form>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

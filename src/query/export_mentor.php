@@ -1,50 +1,62 @@
 <?php
-// Sertakan koneksi database
+require '../vendor/autoload.php';
 include '../koneksi.php';
-
-// Load library PhpSpreadsheet
-require '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-// Buat objek spreadsheet baru
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-// Judul kolom dalam file Excel
-$sheet->setCellValue('A1', 'ID Mentor');
-$sheet->setCellValue('B1', 'Nama Mentor');
-$sheet->setCellValue('C1', 'Email');
-$sheet->setCellValue('D1', 'Alamat');
+// Set headers to match admin.php mentor table
+$headers = [
+    'ID Mentor',
+    'Nama Mentor',
+    'Email',
+    'No. Telp',
+    'Alamat'
+];
 
-// Ambil data dari database
-$query = "SELECT id_mentor, nama_mentor, email_mentor, alamat_mentor FROM mentor";
-$result = $conn->query($query);
-
-if ($result->num_rows > 0) {
-    $rowIndex = 2; // Mulai dari baris kedua setelah header
-    while ($row = $result->fetch_assoc()) {
-        $sheet->setCellValue('A' . $rowIndex, $row['id_mentor']);
-        $sheet->setCellValue('B' . $rowIndex, $row['nama_mentor']);
-        $sheet->setCellValue('C' . $rowIndex, $row['email_mentor']);
-        $sheet->setCellValue('D' . $rowIndex, $row['alamat_mentor']);
-        $rowIndex++;
-    }
+$col = 'A';
+foreach ($headers as $header) {
+    $sheet->setCellValue($col . '1', $header);
+    $col++;
 }
 
-// Atur nama file dan header agar dapat diunduh sebagai Excel
-$filename = "data_mentor.xlsx";
-$filePath = __DIR__ . "/$filename"; // Simpan di direktori yang sama
+// Query data
+$query = "SELECT * FROM mentor ORDER BY id_mentor ASC";
+$result = mysqli_query($conn, $query);
+$row_number = 2;
 
-// Simpan file Excel ke server sebelum mengirimkannya
+while ($row = mysqli_fetch_array($result)) {
+    $sheet->setCellValue('A' . $row_number, $row['id_mentor']);
+    $sheet->setCellValue('B' . $row_number, $row['nama_mentor']);
+    $sheet->setCellValue('C' . $row_number, $row['email_mentor']);
+    $sheet->setCellValue('D' . $row_number, $row['telp_mentor']);
+    $sheet->setCellValue('E' . $row_number, $row['alamat_mentor']);
+
+    $row_number++;
+}
+
+// Auto-size columns
+foreach (range('A', 'E') as $col) {
+    $sheet->getColumnDimension($col)->setAutoSize(true);
+}
+
+// Set header style
+$headerStyle = [
+    'font' => ['bold' => true],
+    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+    'fill' => [
+        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+        'startColor' => ['rgb' => 'E2EFDA']
+    ]
+];
+$sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+// Create Excel file
 $writer = new Xlsx($spreadsheet);
-$writer->save(__DIR__ . '/tes_mentor.xlsx');
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="' . $filename . '"');
+header('Content-Disposition: attachment;filename="Data_Mentor.xlsx"');
 header('Cache-Control: max-age=0');
-
-$writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
-exit;
-?>

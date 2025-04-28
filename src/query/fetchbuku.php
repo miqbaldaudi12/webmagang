@@ -1,15 +1,23 @@
 <?php
-include 'koneksi.php';
+include dirname(__FILE__) . '/../koneksi.php';
 
-$query = "SELECT * FROM peserta";
+$query = "SELECT 
+            id_peserta,
+            nama_peserta,
+            email_peserta,
+            telp_peserta,
+            alamat_peserta,
+            instansi,
+            id_mentor,
+            mentor,
+            tanggal_mulai,
+            tanggal_selesai
+          FROM peserta 
+          ORDER BY id_peserta ASC";
+
 $result = mysqli_query($conn, $query);
+$hasil = array();
 
-if (mysqli_num_rows($result) > 0) {
-  $hasil = array();
-  while ($row = mysqli_fetch_assoc($result)) {
-    $hasil[] = $row;
-  }
-
-} 
-
-mysqli_close($conn);
+while ($row = mysqli_fetch_array($result)) {
+  $hasil[] = $row;
+}

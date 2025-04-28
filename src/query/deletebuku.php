@@ -1,17 +1,29 @@
 <?php
-
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 include '../koneksi.php';
 
 $id_peserta = $_GET['id'];
 
-$query = "DELETE FROM peserta WHERE id_peserta='$id_peserta'";
+$query = "DELETE FROM peserta WHERE id_peserta=?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_peserta);
 
-$result = mysqli_query($conn, $query);
-
-if ($result) {
-  echo "<script>alert('Data berhasil dihapus!');window.location.href='../admin.php';</script>";
+if ($stmt->execute()) {
+  $_SESSION['alert'] = [
+    'type' => 'success',
+    'message' => 'Data peserta berhasil dihapus!'
+  ];
 } else {
-  echo "<script>alert('Data gagal dihapus!');window.location.href='../admin.php';</script>";
+  $_SESSION['alert'] = [
+    'type' => 'danger',
+    'message' => 'Data peserta gagal dihapus!'
+  ];
 }
 
-?>
+$stmt->close();
+$conn->close();
+
+header("Location: ../admin.php");
+exit();

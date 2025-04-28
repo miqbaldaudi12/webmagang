@@ -1,25 +1,50 @@
 <?php
-
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 include '../koneksi.php';
 
-$id_mentor = $_POST['id_mentor'];
 $nama_mentor = $_POST['nama_mentor'];
 $email_mentor = $_POST['email_mentor'];
+$telp_mentor = $_POST['telp_mentor'];
 $alamat_mentor = $_POST['alamat_mentor'];
 
-$query = "SELECT id_mentor FROM mentor WHERE id_mentor = '$id_mentor'";
-$result = mysqli_query($conn, $query);
-
-if (mysqli_num_rows($result) > 0) {
-  echo "<script>alert('ID mentor sudah ada dalam database!');window.location.href='../tambahmentor.php';</script>";
-} else {
-  $result = mysqli_query($conn, "INSERT INTO mentor (id_mentor, nama_mentor, email_mentor, alamat_mentor) VALUES ('$id_mentor', '$nama_mentor', '$email_mentor', '$alamat_mentor')");
-
-  if ($result) {
-    echo "<script>alert('Data mentor berhasil ditambahkan!');window.location.href='../admin.php';</script>";
-  } else {
-    echo "<script>alert('Data mentor gagal ditambahkan!');window.location.href='../admin.php';</script>";
-  }
+// Validate phone number format
+if (!preg_match('/^0[0-9]{8,14}$/', $telp_mentor)) {
+  $_SESSION['alert'] = [
+    'type' => 'danger',
+    'message' => 'Format nomor telepon tidak valid! Harus diawali dengan 0 dan terdiri dari 9-15 digit.'
+  ];
+  header("Location: ../tambahpenerbit.php");
+  exit();
 }
 
-mysqli_close($conn);
+$query = "INSERT INTO mentor (nama_mentor, email_mentor, telp_mentor, alamat_mentor) 
+          VALUES (?, ?, ?, ?)";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param(
+  "ssss",
+  $nama_mentor,
+  $email_mentor,
+  $telp_mentor,
+  $alamat_mentor
+);
+
+if ($stmt->execute()) {
+  $_SESSION['alert'] = [
+    'type' => 'success',
+    'message' => 'Data Mentor berhasil ditambahkan!'
+  ];
+  header("Location: ../admin.php");
+} else {
+  $_SESSION['alert'] = [
+    'type' => 'danger',
+    'message' => 'Data Mentor gagal ditambahkan! ' . $stmt->error
+  ];
+  header("Location: ../tambahpenerbit.php");
+}
+
+$stmt->close();
+$conn->close();
+exit();
